@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>股票复盘游戏 - 千牛哥方法论</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            overflow-x: hidden;
+        }
+
+        /* 游戏主界面 */
+        .game-container {
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* 顶部导航栏 */
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #FFD700;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .level-badge {
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .score-display {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 5px 15px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        /* 主游戏区域 */
+        .main-game-area {
+            margin-top: 80px;
+            padding: 20px;
+            display: flex;
+            gap: 20px;
+            min-height: calc(100vh - 80px);
+        }
+
+        /* 左侧技能面板 */
+        .skill-panel {
+            width: 300px;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .skill-title {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #FFD700;
+        }
+
+        .skill-item {
+            margin-bottom: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .skill-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .skill-name {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .skill-progress {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .skill-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4ECDC4, #44A08D);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        /* 中央复盘区域 */
+        .fuPan-area {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 15px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .fuPan-title {
+            text-align: center;
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 30px;
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* 六步复盘界面 */
+        .six-steps-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .step-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .step-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .step-card:hover::before {
+            left: 100%;
+        }
+
+        .step-card:hover {
+            border-color: #4ECDC4;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(78, 205, 196, 0.3);
+        }
+
+        .step-card.completed {
+            border-color: #4ECDC4;
+            background: linear-gradient(135deg, rgba(78, 205, 196, 0.2), rgba(68, 160, 141, 0.1));
+        }
+
+        .step-card.active {
+            border-color: #FFD700;
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 165, 0, 0.1));
+        }
+
+        .step-icon {
+            font-size: 36px;
+            margin-bottom: 10px;
+            color: #4ECDC4;
+        }
+
+        .step-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .step-desc {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.4;
+        }
+
+        /* 右侧数据面板 */
+        .data-panel {
+            width: 350px;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .data-section {
+            margin-bottom: 20px;
+        }
+
+        .data-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #FFD700;
+            border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+            padding-bottom: 5px;
+        }
+
+        .data-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .data-item:last-child {
+            border-bottom: none;
+        }
+
+        /* 分析输入区域 */
+        .analysis-input {
+            display: none;
+            margin-top: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .analysis-input.active {
+            display: block;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #4ECDC4;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 14px;
+        }
+
+        .input-field::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #4ECDC4;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        textarea.input-field {
+            height: 80px;
+            resize: vertical;
+        }
+
+        /* 按钮样式 */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #4ECDC4, #44A08D);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(45deg, #44A08D, #4ECDC4);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(78, 205, 196, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: linear-gradient(45deg, #FFA500, #FFD700);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
+        }
+
+        /* 动画效果 */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 1200px) {
+            .main-game-area {
+                flex-direction: column;
+            }
+            
+            .skill-panel, .data-panel {
+                width: 100%;
+                order: 2;
+            }
+            
+            .fuPan-area {
+                order: 1;
+            }
+            
+            .six-steps-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .six-steps-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .navbar {
+                padding: 10px 15px;
+            }
+            
+            .logo {
+                font-size: 20px;
+            }
+        }
+
+        /* 成就弹窗 */
+        .achievement-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #333;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            display: none;
+        }
+
+        .achievement-popup.show {
+            display: block;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .achievement-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .achievement-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .achievement-desc {
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- 顶部导航 -->
+        <nav class="navbar">
+            <div class="logo">
+                <i class="fas fa-chart-line"></i> 股票复盘游戏
+            </div>
+            <div class="user-info">
+                <div class="level-badge">
+                    <i class="fas fa-star"></i> 初学者 Lv.1
+                </div>
+                <div class="score-display">
+                    <i class="fas fa-trophy"></i> 总分: 0
+                </div>
+                <div class="score-display">
+                    <i class="fas fa-coins"></i> 技能点: 0
+                </div>
+            </div>
+        </nav>
+
+        <!-- 主游戏区域 -->
+        <div class="main-game-area">
+            <!-- 左侧技能面板 -->
+            <div class="skill-panel fade-in-up">
+                <h3 class="skill-title">
+                    <i class="fas fa-magic"></i> 技能树
+                </h3>
+                
+                <div class="skill-item">
+                    <div class="skill-name">
+                        <span><i class="fas fa-eye"></i> 市场感知</span>
+                        <span>85/100</span>
+                    </div>
+                    <div class="skill-progress">
+                        <div class="skill-progress-bar" style="width: 85%;"></div>
+                    </div>
+                </div>
+
+                <div class="skill-item">
+                    <div class="skill-name">
+                        <span><i class="fas fa-shield-alt"></i> 风险嗅觉</span>
+                        <span>72/100</span>
+                    </div>
+                    <div class="skill-progress">
+                        <div class="skill-progress-bar" style="width: 72%;"></div>
+                    </div>
+                </div>
+
+                <div class="skill-item">
+                    <div class="skill-name">
+                        <span><i class="fas fa-bullseye"></i> 机会捕捉</span>
+                        <span>68/100</span>
+                    </div>
+                    <div class="skill-progress">
+                        <div class="skill-progress-bar" style="width: 68%;"></div>
+                    </div>
+                </div>
+
+                <div class="skill-item">
+                    <div class="skill-name">
+                        <span><i class="fas fa-money-bill-wave"></i> 资金嗅觉</span>
+                        <span>75/100</span>
+                    </div>
+                    <div class="skill-progress">
+                        <div class="skill-progress-bar" style="width: 75%;"></div>
+                    </div>
+                </div>
+
+                <div class="skill-item">
+                    <div class="skill-name">
+                        <span><i class="fas fa-brain"></i> 逻辑思维</span>
+                        <span>80/100</span>
+                    </div>
+                    <div class="skill-progress">
+                        <div class="skill-progress-bar" style="width: 80%;"></div>
+                    </div>
+                </div>
+
+                <div class="skill-item">
+                    <div class="skill-name">
+                        <span><i class="fas fa-layer-group"></i> 组合管理</span>
+                        <span>63/100</span>
+                    </div>
+                    <div class="skill-progress">
+                        <div class="skill-progress-bar" style="width: 63%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 中央复盘区域 -->
+            <div class="fuPan-area fade-in-up">
+                <h2 class="fuPan-title">千牛哥六步复盘法</h2>
+                
+                <!-- 六步复盘卡片 -->
+                <div class="six-steps-container">
+                    <div class="step-card active pulse" data-step="1">
+                        <div class="step-icon">
+                            <i class="fas fa-globe"></i>
+                        </div>
+                        <div class="step-title">市场鸟瞰</div>
+                        <div class="step-desc">查看平均股价、涨跌家数、成交额，判断整体多空</div>
+                    </div>
+
+                    <div class="step-card" data-step="2">
+                        <div class="step-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="step-title">风险扫描</div>
+                        <div class="step-desc">跌幅榜+跌停榜，回避高危板块个股</div>
+                    </div>
+
+                    <div class="step-card" data-step="3">
+                        <div class="step-icon">
+                            <i class="fas fa-search-plus"></i>
+                        </div>
+                        <div class="step-title">机会扫描</div>
+                        <div class="step-desc">涨幅榜+连板榜，锁定主线跟踪领涨股</div>
+                    </div>
+
+                    <div class="step-card" data-step="4">
+                        <div class="step-icon">
+                            <i class="fas fa-check-double"></i>
+                        </div>
+                        <div class="step-title">资金验证</div>
+                        <div class="step-desc">成交额前50+板块量价，确认主流板块持续性</div>
+                    </div>
+
+                    <div class="step-card" data-step="5">
+                        <div class="step-icon">
+                            <i class="fas fa-puzzle-piece"></i>
+                        </div>
+                        <div class="step-title">逻辑核对</div>
+                        <div class="step-desc">与政策宏观行业逻辑对表，判断延展性</div>
+                    </div>
+
+                    <div class="step-card" data-step="6">
+                        <div class="step-icon">
+                            <i class="fas fa-list-alt"></i>
+                        </div>
+                        <div class="step-title">标记分组</div>
+                        <div class="step-desc">建自选分组，形成次日盯盘雷达图</div>
+                    </div>
+                </div>
+
+                <!-- 分析输入区域 -->
+                <div class="analysis-input active" id="step1-input">
+                    <h4 style="color: #FFD700; margin-bottom: 15px;">
+                        <i class="fas fa-globe"></i> 第一步：市场鸟瞰分析
+                    </h4>
+                    <div class="input-group">
+                        <label class="input-label">市场整体走势判断：</label>
+                        <select class="input-field">
+                            <option>请选择</option>
+                            <option>强势上涨</option>
+                            <option>震荡偏强</option>
+                            <option>震荡</option>
+                            <option>震荡偏弱</option>
+                            <option>弱势下跌</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">涨跌家数比例：</label>
+                        <input type="text" class="input-field" placeholder="如：涨停30家，跌停5家">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">成交额水位：</label>
+                        <input type="text" class="input-field" placeholder="如：总成交1.2万亿，较昨日增加15%">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">市场情绪分析：</label>
+                        <textarea class="input-field" placeholder="请结合平均股价、资金面等因素分析市场情绪..."></textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="nextStep(2)">
+                        <i class="fas fa-arrow-right"></i> 下一步：风险扫描
+                    </button>
+                </div>
+            </div>
+
+            <!-- 右侧数据面板 -->
+            <div class="data-panel fade-in-up">
+                <div class="data-section">
+                    <h4 class="data-title">
+                        <i class="fas fa-chart-bar"></i> 实时市场数据
+                    </h4>
+                    <div class="data-item">
+                        <span>上证指数:</span>
+                        <span style="color: #FF6B6B;">3245.67 ↓-1.2%</span>
+                    </div>
+                    <div class="data-item">
+                        <span>深证成指:</span>
+                        <span style="color: #4ECDC4;">12456.32 ↑+0.8%</span>
+                    </div>
+                    <div class="data-item">
+                        <span>创业板指:</span>
+                        <span style="color: #4ECDC4;">2876.45 ↑+1.5%</span>
+                    </div>
+                    <div class="data-item">
+                        <span>总成交额:</span>
+                        <span>1.15万亿</span>
+                    </div>
+                </div>
+
+                <div class="data-section">
+                    <h4 class="data-title">
+                        <i class="fas fa-fire"></i> 今日热门板块
+                    </h4>
+                    <div class="data-item">
+                        <span>新能源汽车:</span>
+                        <span style="color: #4ECDC4;">+3.2%</span>
+                    </div>
+                    <div class="data-item">
+                        <span>人工智能:</span>
+                        <span style="color: #4ECDC4;">+2.8%</span>
+                    </div>
+                    <div class="data-item">
+                        <span>医疗器械:</span>
+                        <span style="color: #4ECDC4;">+2.1%</span>
+                    </div>
+                </div>
+
+                <div class="data-section">
+                    <h4 class="data-title">
+                        <i class="fas fa-exclamation-triangle"></i> 风险预警
+                    </h4>
+                    <div class="data-item">
+                        <span>房地产:</span>
+                        <span style="color: #FF6B6B;">-2.8%</span>
+                    </div>
+                    <div class="data-item">
+                        <span>银行:</span>
+                        <span style="color: #FF6B6B;">-1.5%</span>
+                    </div>
+                    <div class="data-item">
+                        <span>跌停股数:</span>
+                        <span style="color: #FF6B6B;">12只</span>
+                    </div>
+                </div>
+
+                <div class="data-section">
+                    <h4 class="data-title">
+                        <i class="fas fa-crown"></i> 连板龙头
+                    </h4>
+                    <div class="data-item">
+                        <span>比亚迪:</span>
+                        <span style="color: #FFD700;">3连板</span>
+                    </div>
+                    <div class="data-item">
+                        <span>宁德时代:</span>
+                        <span style="color: #FFD700;">2连板</span>
+                    </div>
+                    <div class="data-item">
+                        <span>特斯拉概念:</span>
+                        <span style="color: #4ECDC4;">强势</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 成就弹窗 -->
+    <div class="achievement-popup" id="achievementPopup">
+        <div class="achievement-icon">
+            <i class="fas fa-trophy"></i>
+        </div>
+        <div class="achievement-title">恭喜获得成就！</div>
+        <div class="achievement-desc">首次完成市场鸟瞰分析</div>
+        <button class="btn btn-secondary" onclick="closeAchievement()">继续游戏</button>
+    </div>
+
+    <script>
+        // 游戏状态管理
+        let gameState = {
+            currentStep: 1,
+            completedSteps: [],
+            skillPoints: {
+                marketPerception: 85,
+                riskSense: 72,
+                opportunityCapture: 68,
+                capitalSense: 75,
+                logicThinking: 80,
+                portfolioManagement: 63
+            },
+            totalScore: 0,
+            level: 1
+        };
+
+        // 步骤切换功能
+        function nextStep(stepNumber) {
+            // 标记当前步骤完成
+            gameState.completedSteps.push(gameState.currentStep);
+            
+            // 更新UI
+            const currentCard = document.querySelector(`.step-card[data-step="${gameState.currentStep}"]`);
+            currentCard.classList.remove('active', 'pulse');
+            currentCard.classList.add('completed');
+            
+            // 切换到下一步
+            gameState.currentStep = stepNumber;
+            
+            if (stepNumber <= 6) {
+                const nextCard = document.querySelector(`.step-card[data-step="${stepNumber}"]`);
+                nextCard.classList.add('active', 'pulse');
+                
+                // 隐藏当前输入区域
+                document.querySelectorAll('.analysis-input').forEach(el => {
+                    el.classList.remove('active');
+                });
+                
+                // 显示下一步输入区域
+                const nextInput = document.getElementById(`step${stepNumber}-input`);
+                if (nextInput) {
+                    nextInput.classList.add('active');
+                }
+            }
+            
+            // 增加技能点
+            addSkillPoints(5);
+            
+            // 显示成就
+            showAchievement(`完成第${gameState.currentStep - 1}步分析！`, `获得5点技能点`);
+        }
+
+        // 添加技能点
+        function addSkillPoints(points) {
+            // 随机分配到各项技能
+            const skills = Object.keys(gameState.skillPoints);
+            const randomSkill = skills[Math.floor(Math.random() * skills.length)];
+            gameState.skillPoints[randomSkill] = Math.min(100, gameState.skillPoints[randomSkill] + points);
+            
+            // 更新UI
+            updateSkillDisplay();
+        }
+
+        // 更新技能显示
+        function updateSkillDisplay() {
+            const skillItems = document.querySelectorAll('.skill-item');
+            const skillNames = ['marketPerception', 'riskSense', 'opportunityCapture', 'capitalSense', 'logicThinking', 'portfolioManagement'];
+            
+            skillItems.forEach((item, index) => {
+                const skillValue = gameState.skillPoints[skillNames[index]];
+                const progressBar = item.querySelector('.skill-progress-bar');
+                const valueSpan = item.querySelector('.skill-name span:last-child');
+                
+                progressBar.style.width = skillValue + '%';
+                valueSpan.textContent = `${skillValue}/100`;
+            });
+        }
+
+        // 显示成就弹窗
+        function showAchievement(title, description) {
+            const popup = document.getElementById('achievementPopup');
+            popup.querySelector('.achievement-title').textContent = title;
+            popup.querySelector('.achievement-desc').textContent = description;
+            popup.classList.add('show');
+        }
+
+        // 关闭成就弹窗
+        function closeAchievement() {
+            document.getElementById('achievementPopup').classList.remove('show');
+        }
+
+        // 步骤卡片点击事件
+        document.querySelectorAll('.step-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const stepNumber = parseInt(this.dataset.step);
+                
+                // 只能点击当前步骤或已完成的步骤
+                if (stepNumber <= gameState.currentStep || gameState.completedSteps.includes(stepNumber)) {
+                    // 切换步骤显示
+                    document.querySelectorAll('.step-card').forEach(c => {
+                        c.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                    
+                    // 切换输入区域
+                    document.querySelectorAll('.analysis-input').forEach(input => {
+                        input.classList.remove('active');
+                    });
+                    
+                    const targetInput = document.getElementById(`step${stepNumber}-input`);
+                    if (targetInput) {
+                        targetInput.classList.add('active');
+                    }
+                }
+            });
+        });
+
+        // 初始化游戏
+        function initGame() {
+            updateSkillDisplay();
+            
+            // 添加千牛哥金句滚动
+            setTimeout(() => {
+                showAchievement('千牛哥提醒', '价格永远领先情绪，先手赚后手的钱！');
+            }, 3000);
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', initGame);
+    </script>
+</body>
+</html>

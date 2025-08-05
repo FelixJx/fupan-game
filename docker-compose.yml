@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    container_name: fupan-game
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./fuPan_game.db:/app/fuPan_game.db
+      - ./prediction_game.db:/app/prediction_game.db
+      - ./data:/app/data
+      - ./logs:/app/logs
+    environment:
+      - PYTHONUNBUFFERED=1
+      - TZ=Asia/Shanghai
+    restart: unless-stopped
+    networks:
+      - fupan-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  redis:
+    image: redis:alpine
+    container_name: fupan-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - fupan-network
+    restart: unless-stopped
+
+networks:
+  fupan-network:
+    driver: bridge
+
+volumes:
+  redis-data:
