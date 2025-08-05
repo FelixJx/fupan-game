@@ -1,73 +1,174 @@
-# 📈 股票复盘游戏
+# 🎮 股票复盘游戏
 
-> 基于千牛哥复盘方法论的游戏化股票分析工具  
-> 让复盘变成RPG游戏，通过真实数据验证提升"先知先觉"能力
+基于千牛哥复盘方法论的游戏化股票分析工具
 
-## 🎯 项目概述
+## ✨ 特色功能
 
-这是一个将股票复盘过程游戏化的创新工具，完全基于知名股票分析师"千牛哥"的25分钟复盘精华方法论。通过RPG式的游戏界面和真实数据验证，让用户在娱乐中学习专业的股票分析技能。
+- 🎯 **六步复盘法游戏化**：市场鸟瞰 → 风险扫描 → 机会扫描 → 资金验证 → 逻辑核对 → 标记分组
+- 📊 **实时数据获取**：多数据源融合，包括akshare、yfinance等
+- 🔮 **预测挑战系统**：每日预测题目，验证分析能力
+- 📈 **技能点升级**：六大核心技能培养
+- 🏆 **排行榜系统**：与其他玩家比拼分析能力
 
-### ✨ 核心特色
+## 🚀 快速部署到阿里云
 
-- 🎮 **完美世界风格**：3D立体股票大厅场景，角色扮演分析师
-- 📊 **真实数据驱动**：接入A股实时数据，第二天真实验证预测准确性  
-- 🏆 **双重评分体系**：预测准确度(70分) + 复盘深度(30分)
-- 🎯 **技能树系统**：六大技能点数培养，可视化能力提升
-- 🔮 **千牛哥金句**：内置方法论提示，在游戏中学习投资智慧
+### 方法1：一行命令部署（推荐）
 
-## 🎪 千牛哥六步复盘法
+在阿里云ECS服务器上执行：
 
-### 1️⃣ 市场鸟瞰 - 探索关卡
-- 查看平均股价、涨跌家数、总成交额
-- 判断整体多空 & 资金面高低
-- 获得"市场感知"技能点
-
-### 2️⃣ 风险扫描 - 防御关卡  
-- 跌幅榜 + 跌停榜分析
-- 回避高危板块/个股
-- 获得"风险嗅觉"技能点
-
-### 3️⃣ 机会扫描 - 攻击关卡
-- 涨幅榜 + 连板榜 + 阶段涨幅榜
-- 锁定主线、跟踪领涨股
-- 获得"机会捕捉"技能点
-
-### 4️⃣ 资金验证 - 策略关卡
-- 成交额前50个股 & 板块K线量价
-- 确认主流板块持续性
-- 获得"资金嗅觉"技能点
-
-### 5️⃣ 逻辑核对 - 智慧关卡
-- 与政策、宏观 & 行业逻辑对表
-- 判断题材延展性 & 时效
-- 获得"逻辑思维"技能点
-
-### 6️⃣ 标记分组 - 管理关卡
-- 按标签建自选：趋势股、情绪股、机构票等
-- 形成下单"雷达图"，次日盯主线
-- 获得"组合管理"技能点
-
-## 🚀 快速开始
-
-### 环境要求
-- Python 3.8+
-- 现代浏览器（Chrome/Firefox/Safari）
-
-### 安装依赖
 ```bash
-cd 复盘游戏
-pip install -r requirements.txt
+curl -fsSL https://raw.githubusercontent.com/FelixJx/fupan-game/main/install.sh | bash
 ```
 
-### 启动游戏
+### 方法2：手动部署
+
+1. **克隆项目**：
 ```bash
+cd /opt
+git clone https://github.com/FelixJx/fupan-game.git
+cd fupan-game
+```
+
+2. **安装依赖**：
+```bash
+apt update
+apt install -y python3 python3-pip nginx
+pip3 install -r requirements.txt
+```
+
+3. **启动应用**：
+```bash
+mkdir -p data logs
+python3 main.py
+```
+
+4. **配置Nginx**（可选）：
+```bash
+# 配置反向代理到80端口
+systemctl restart nginx
+```
+
+## 📋 系统要求
+
+- **操作系统**：Ubuntu 18.04+ / CentOS 7+ / Alibaba Cloud Linux
+- **Python**：3.7+
+- **内存**：建议2GB+
+- **存储**：建议10GB+
+
+## 🔧 配置说明
+
+### 端口设置
+- **8000**：应用主端口
+- **80**：Nginx反向代理端口（可选）
+
+### 安全组设置
+确保阿里云安全组开放以下端口：
+- TCP 22 （SSH）
+- TCP 80 （HTTP）
+- TCP 8000 （应用）
+
+## 🎯 使用指南
+
+### 游戏模式
+
+1. **传统复盘模式**：
+   - 访问：`http://your-server/`
+   - 按六步法进行复盘分析
+
+2. **预测挑战模式**：
+   - 访问：`http://your-server/prediction`
+   - 参与每日预测挑战
+
+### API接口
+
+- `GET /api/market_data` - 获取市场数据
+- `POST /api/start_game` - 开始新游戏
+- `GET /api/daily_questions/{date}` - 获取每日题目
+- `GET /api/leaderboard` - 查看排行榜
+
+## 🛠️ 开发指南
+
+### 本地开发
+
+```bash
+# 克隆项目
+git clone https://github.com/FelixJx/fupan-game.git
+cd fupan-game
+
+# 安装依赖
+pip install -r requirements.txt
+
+# 启动开发服务器
 python main.py
 ```
 
-游戏将在 `http://localhost:8000` 启动
+### 项目结构
+
+```
+fupan-game/
+├── main.py                 # FastAPI主程序
+├── data_system.py          # 数据系统
+├── scoring_system.py       # 评分系统
+├── prediction_game_engine.py # 预测游戏引擎
+├── game_interface.html     # 传统复盘界面
+├── prediction_game_interface.html # 预测游戏界面
+├── requirements.txt        # Python依赖
+└── deploy/                 # 部署脚本
+```
+
+### 数据源
+
+- **akshare**：A股数据
+- **yfinance**：美股数据
+- **实时新闻**：财经新闻抓取
+- **技术指标**：自动计算
+
+## 📊 监控与维护
+
+### 查看服务状态
+```bash
+# 查看应用进程
+ps aux | grep python
+
+# 查看日志
+tail -f logs/app.log
+
+# 重启应用
+pkill -f python
+python3 main.py &
+```
+
+### 更新代码
+```bash
+cd /opt/fupan-game
+git pull
+# 重启应用
+```
+
+## 🤝 贡献指南
+
+欢迎提交Issue和Pull Request！
+
+### 开发规范
+- 代码风格：PEP 8
+- 提交信息：使用英文，描述清晰
+- 测试：确保功能正常
+
+## 📄 许可证
+
+本项目采用 MIT 许可证
+
+## 🙏 致谢
+
+- 千牛哥复盘方法论
+- akshare数据支持
+- FastAPI框架
+
+## 📞 联系方式
+
+- GitHub Issues: [提交问题](https://github.com/FelixJx/fupan-game/issues)
+- 项目地址: https://github.com/FelixJx/fupan-game
 
 ---
 
-🎮 **开始你的复盘游戏之旅，成为股市的先知先觉者！**
-
-*"价格永远领先情绪，先手赚后手的钱！" - 千牛哥*
+🎮 **让复盘变成游戏，提升先知先觉能力！**
